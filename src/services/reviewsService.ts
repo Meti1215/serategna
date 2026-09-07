@@ -1,5 +1,6 @@
 import { Review } from '@/types';
 import { mockReviews } from '@/data/mockReviews';
+import { notificationsService } from './notificationsService';
 
 export const reviewsService = {
   async getReviewsForWorker(workerId: string): Promise<Review[]> {
@@ -14,6 +15,13 @@ export const reviewsService = {
       isReported: false,
     };
     mockReviews.unshift(review);
+
+    // Create notification for worker when employer submits a review
+    await notificationsService.createReviewNotification(
+      review.workerId,
+      review.id
+    );
+
     return review;
   },
 

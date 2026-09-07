@@ -18,6 +18,11 @@ import {
   Gift,
   ShieldCheck,
   ArrowRight,
+  MapPin,
+  Upload,
+  FileText,
+  CheckCircle,
+  AlertCircle,
 } from 'lucide-react';
 
 function RegisterPageContent() {
@@ -46,6 +51,10 @@ function RegisterPageContent() {
   const [ePassword, setEPassword] = useState('');
   const [eType, setEType] = useState('Corporate Enterprise');
   const [eRegion, setERegion] = useState('Addis Ababa');
+  const [eAddress, setEAddress] = useState('');
+  const [businessLicenseFile, setBusinessLicenseFile] = useState<File | null>(null);
+  const [taxIdFile, setTaxIdFile] = useState<File | null>(null);
+  const [additionalDocs, setAdditionalDocs] = useState<File[]>([]);
 
   const handleWorkerSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,10 +72,27 @@ function RegisterPageContent() {
     switchDemoPersona('employer');
     showToast(
       'Employer Account Created!',
-      'Welcome to Serategna. Post your first job to receive 1 Free Worker Phone Unlock!',
+      'Welcome to Serategna. Complete your verification to get the Verified Employer badge and build trust with workers.',
       'success'
     );
     router.push('/employer/dashboard');
+  };
+
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setter: (file: File | null) => void
+  ) => {
+    const file = e.target.files?.[0] || null;
+    setter(file);
+  };
+
+  const handleAdditionalDocsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setAdditionalDocs([...additionalDocs, ...files]);
+  };
+
+  const removeAdditionalDoc = (index: number) => {
+    setAdditionalDocs(additionalDocs.filter((_, i) => i !== index));
   };
 
   return (
@@ -359,6 +385,21 @@ function RegisterPageContent() {
               </div>
 
               <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Full Address</label>
+                <div className="relative">
+                  <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                  <input
+                    type="text"
+                    required
+                    value={eAddress}
+                    onChange={(e) => setEAddress(e.target.value)}
+                    placeholder="e.g. Bole Subcity, Woreda 3, Building 45"
+                    className="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Create Password</label>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
@@ -370,6 +411,143 @@ function RegisterPageContent() {
                     placeholder="At least 8 characters"
                     className="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                   />
+                </div>
+              </div>
+
+              {/* Verification Documents Section */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <h3 className="text-xs font-bold text-slate-900">Verification Documents</h3>
+                  <span className="text-[10px] text-slate-500">(Optional - Upload later)</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600">
+                  <p className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                    <span>
+                      Upload your business license and tax ID to receive the <strong>Verified Employer</strong> badge. This helps workers identify legitimate employers.
+                    </span>
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Business License
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => handleFileChange(e, setBusinessLicenseFile)}
+                      className="hidden"
+                      id="businessLicense"
+                    />
+                    <label
+                      htmlFor="businessLicense"
+                      className={`flex items-center gap-3 p-3 border-2 border-dashed rounded-xl cursor-pointer transition ${
+                        businessLicenseFile
+                          ? 'border-emerald-300 bg-emerald-50'
+                          : 'border-slate-300 hover:border-emerald-400 bg-white'
+                      }`}
+                    >
+                      {businessLicenseFile ? (
+                        <>
+                          <CheckCircle className="w-5 h-5 text-emerald-600" />
+                          <span className="text-xs font-medium text-emerald-700 truncate">
+                            {businessLicenseFile.name}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-5 h-5 text-slate-400" />
+                          <span className="text-xs text-slate-500">Upload business license (PDF, JPG, PNG)</span>
+                        </>
+                      )}
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Tax ID Document
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => handleFileChange(e, setTaxIdFile)}
+                      className="hidden"
+                      id="taxId"
+                    />
+                    <label
+                      htmlFor="taxId"
+                      className={`flex items-center gap-3 p-3 border-2 border-dashed rounded-xl cursor-pointer transition ${
+                        taxIdFile
+                          ? 'border-emerald-300 bg-emerald-50'
+                          : 'border-slate-300 hover:border-emerald-400 bg-white'
+                      }`}
+                    >
+                      {taxIdFile ? (
+                        <>
+                          <CheckCircle className="w-5 h-5 text-emerald-600" />
+                          <span className="text-xs font-medium text-emerald-700 truncate">
+                            {taxIdFile.name}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-5 h-5 text-slate-400" />
+                          <span className="text-xs text-slate-500">Upload tax ID document (PDF, JPG, PNG)</span>
+                        </>
+                      )}
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Additional Documents (Optional)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      multiple
+                      onChange={handleAdditionalDocsChange}
+                      className="hidden"
+                      id="additionalDocs"
+                    />
+                    <label
+                      htmlFor="additionalDocs"
+                      className="flex items-center gap-3 p-3 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-emerald-400 bg-white transition"
+                    >
+                      <Upload className="w-5 h-5 text-slate-400" />
+                      <span className="text-xs text-slate-500">Upload additional documents</span>
+                    </label>
+                  </div>
+                  {additionalDocs.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {additionalDocs.map((doc, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-2 bg-slate-50 rounded-lg text-xs"
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <FileText className="w-4 h-4 text-slate-400 shrink-0" />
+                            <span className="truncate text-slate-700">{doc.name}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeAdditionalDoc(index)}
+                            className="text-red-500 hover:text-red-700 font-medium text-[10px]"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 

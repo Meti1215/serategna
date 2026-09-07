@@ -1,5 +1,24 @@
 export type UserRole = 'guest' | 'worker' | 'employer' | 'admin';
 
+export type PaymentMethod = 'chapa' | 'telebirr' | 'cbe' | 'other';
+export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded';
+
+export interface Payment {
+  id: string;
+  employerId: string;
+  employerName: string;
+  workerId: string;
+  workerName: string;
+  amount: number;
+  currency: string;
+  method: PaymentMethod;
+  status: PaymentStatus;
+  transactionId?: string;
+  description: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
 export interface RatingsBreakdown {
   overall: number;
   workQuality: number;
@@ -73,6 +92,10 @@ export interface WorkerProfile {
   isEmployerVerified: boolean;
   isFeatured: boolean;
   isSponsored: boolean;
+  featuredStartDate?: string;
+  featuredEndDate?: string;
+  featuredPriority?: number;
+  featuredIsActive?: boolean;
   verificationStatus: WorkerVerification;
   workHistory: WorkHistoryItem[];
   education: EducationItem[];
@@ -102,6 +125,10 @@ export interface Job {
   postedDate: string;
   deadline: string;
   isFeatured: boolean;
+  featuredStartDate?: string;
+  featuredEndDate?: string;
+  featuredPriority?: number;
+  featuredIsActive?: boolean;
   applicantsCount: number;
   status: 'Active' | 'Under Review' | 'Closed' | 'Draft';
 }
@@ -134,7 +161,9 @@ export interface Internship {
 }
 
 export type ApplicationStatus =
+  | 'New'
   | 'Applied'
+  | 'Reviewing'
   | 'Under Review'
   | 'Shortlisted'
   | 'Interview'
@@ -153,12 +182,21 @@ export interface Application {
   applicantProfession?: string;
   applicantEmail: string;
   applicantPhone: string;
+  applicantLocation?: string;
+  applicantRegion?: string;
+  applicantExperience?: string;
+  applicantSkills?: string[];
+  applicantRating?: number;
+  applicantTotalReviews?: number;
   coverLetter?: string;
   cvFileName?: string;
+  cvFileUrl?: string;
+  certificates?: string[];
   appliedDate: string;
   status: ApplicationStatus;
   notes?: string;
   interviewDate?: string;
+  updatedAt?: string;
 }
 
 export interface Review {
@@ -194,6 +232,19 @@ export interface PhoneUnlockTransaction {
   status: 'Paid' | 'Failed' | 'Pending';
 }
 
+export interface EmployerVerification {
+  businessLicenseUploaded: boolean;
+  businessLicenseVerified: boolean;
+  taxIdUploaded: boolean;
+  taxIdVerified: boolean;
+  additionalDocumentsUploaded: boolean;
+  additionalDocumentsVerified: boolean;
+  status: 'Verified' | 'Pending Verification' | 'Document Uploaded' | 'Not Started';
+  submittedAt?: string;
+  verifiedAt?: string;
+  rejectionReason?: string;
+}
+
 export interface EmployerProfile {
   id: string;
   name: string;
@@ -203,35 +254,137 @@ export interface EmployerProfile {
   businessType: string;
   location: string;
   region: string;
+  address: string;
   isVerified: boolean;
+  verification: EmployerVerification;
   hasPostedFirstJob: boolean;
   freeUnlocksRemaining: number;
   phoneUnlocksCount: number;
   postedJobsCount: number;
   postedInternshipsCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type NewsCategory =
+  | 'Employment News'
+  | 'Career Advice'
+  | 'Job Market'
+  | 'Worker Rights'
+  | 'Employer Advice'
+  | 'Training Opportunities'
+  | 'Recruitment Tips'
+  | 'Platform Announcements';
+
+export type NewsStatus = 'draft' | 'published' | 'unpublished';
+
+export type AdvertisementType =
+  | 'banner'
+  | 'sponsored_worker'
+  | 'sponsored_job'
+  | 'featured_company'
+  | 'featured_category';
+
+export type AdvertisementStatus = 'pending' | 'approved' | 'rejected' | 'active' | 'expired' | 'inactive';
+
+export type AdvertisementLocation = 'homepage' | 'workers_page' | 'jobs_page' | 'sidebar' | 'footer';
+
+export interface Advertisement {
+  id: string;
+  title: string;
+  type: AdvertisementType;
+  advertiserName: string;
+  advertiserId?: string;
+  imageUrl: string;
+  destinationUrl: string;
+  location: AdvertisementLocation;
+  startDate: string;
+  endDate: string;
+  status: AdvertisementStatus;
+  priority: number;
+  isApproved: boolean;
+  approvedBy?: string;
+  approvedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FeaturedWorker {
+  workerId: string;
+  isFeatured: boolean;
+  featuredStartDate?: string;
+  featuredEndDate?: string;
+  priority: number;
+  isActive: boolean;
+}
+
+export interface FeaturedJob {
+  jobId: string;
+  isFeatured: boolean;
+  featuredStartDate?: string;
+  featuredEndDate?: string;
+  priority: number;
+  isActive: boolean;
+}
+
+export type NotificationType =
+  | 'matching_job'
+  | 'application_update'
+  | 'employer_message'
+  | 'profile_approval'
+  | 'review'
+  | 'new_application'
+  | 'matching_worker'
+  | 'payment_confirmation'
+  | 'phone_unlock'
+  | 'system_announcement';
+
+export type NotificationRole = 'worker' | 'employer' | 'admin' | 'all';
+
+export interface Notification {
+  id: string;
+  userId: string;
+  userRole: NotificationRole;
+  type: NotificationType;
+  title: string;
+  message: string;
+  isRead: boolean;
+  relatedRecordId?: string;
+  relatedPage?: string;
+  createdAt: string;
+  readAt?: string;
+}
+
+export interface NotificationPreferences {
+  userId: string;
+  emailEnabled: boolean;
+  smsEnabled: boolean;
+  pushEnabled: boolean;
+  matchingJobEnabled: boolean;
+  applicationUpdateEnabled: boolean;
+  messageEnabled: boolean;
+  reviewEnabled: boolean;
+  systemAnnouncementEnabled: boolean;
 }
 
 export interface NewsArticle {
   id: string;
   title: string;
   slug: string;
-  category:
-    | 'Employment News'
-    | 'Career Advice'
-    | 'Job Market'
-    | 'Worker Rights'
-    | 'Employer Advice'
-    | 'Training Opportunities'
-    | 'Recruitment Tips'
-    | 'Platform Announcements';
+  category: NewsCategory;
   summary: string;
   content: string;
   coverImage: string;
   author: string;
+  authorId?: string;
   date: string;
   readTime: string;
   isFeatured: boolean;
   tags: string[];
+  status: NewsStatus;
+  publishedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CategoryItem {

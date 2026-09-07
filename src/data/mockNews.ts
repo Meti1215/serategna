@@ -7,7 +7,7 @@ export const mockNews: NewsArticle[] = [
     slug: 'serategna-launches-phone-privacy-ecosystem',
     category: 'Platform Announcements',
     summary: 'The new marketplace safeguards blue-collar and professional workers from harassment with a privacy-first 100 ETB unlock mechanism while granting employers verified candidate histories.',
-    content: `Serategna.com officially introduced its nationwide marketplace platform connecting employers, workers, and university interns under a unified trust architecture. 
+    content: `Serategna.com officially introduced its nationwide marketplace platform connecting employers, workers, and university interns under a unified trust architecture.
 
 A pivotal breakthrough of the platform is the **Worker Phone Privacy System**. In traditional classifieds, workers' direct phone numbers are exposed to public scraping, resulting in spam and safety vulnerabilities. Serategna solves this by keeping all contact information private behind a nominal 100 ETB unlock fee, directly payable through **Telebirr, Chapa, and CBE Birr**.
 
@@ -18,6 +18,10 @@ Furthermore, to stimulate authentic job creation, Serategna introduced the **Fir
     readTime: '4 min read',
     isFeatured: true,
     tags: ['Announcement', 'Privacy', 'Telebirr', 'Employment'],
+    status: 'published',
+    publishedAt: '2026-09-02T10:00:00Z',
+    createdAt: '2026-09-02T09:30:00Z',
+    updatedAt: '2026-09-02T10:00:00Z',
   },
   {
     id: 'news-2',
@@ -39,6 +43,10 @@ Serategna encourages all employers to supply formal written contracts and clear 
     readTime: '6 min read',
     isFeatured: false,
     tags: ['Labor Law', 'Contracts', 'Worker Rights'],
+    status: 'published',
+    publishedAt: '2026-08-28T14:00:00Z',
+    createdAt: '2026-08-28T13:00:00Z',
+    updatedAt: '2026-08-28T14:00:00Z',
   },
   {
     id: 'news-3',
@@ -46,7 +54,7 @@ Serategna encourages all employers to supply formal written contracts and clear 
     slug: 'students-turn-summer-internships-into-careers',
     category: 'Career Advice',
     summary: 'Practical tips on mastering Next.js, building verifiable GitHub portfolios, and excelling during Ethiopian tech company internship programs.',
-    content: `With Ethiopia’s burgeoning digital economy—powered by digital payments, telecom expansion, and fintech—demand for fresh software talent has never been higher. 
+    content: `With Ethiopia's burgeoning digital economy—powered by digital payments, telecom expansion, and fintech—demand for fresh software talent has never been higher.
 
 Students seeking internships should focus on:
 - **Verifiable Code**: Employers prioritize candidate GitHub repositories with clean commits over mere theoretical GPA.
@@ -58,6 +66,10 @@ Students seeking internships should focus on:
     readTime: '5 min read',
     isFeatured: false,
     tags: ['Internships', 'Career Tips', 'Students', 'Software Engineering'],
+    status: 'published',
+    publishedAt: '2026-08-20T09:00:00Z',
+    createdAt: '2026-08-20T08:30:00Z',
+    updatedAt: '2026-08-20T09:00:00Z',
   },
   {
     id: 'news-4',
@@ -72,5 +84,9 @@ Students seeking internships should focus on:
     readTime: '4 min read',
     isFeatured: false,
     tags: ['Trade Jobs', 'TVET', 'Economic Growth'],
+    status: 'published',
+    publishedAt: '2026-08-15T11:00:00Z',
+    createdAt: '2026-08-15T10:30:00Z',
+    updatedAt: '2026-08-15T11:00:00Z',
   },
 ];

@@ -1,6 +1,7 @@
 import { PhoneUnlockTransaction } from '@/types';
 import { mockTransactions } from '@/data/mockReviews';
 import { mockWorkers } from '@/data/mockWorkers';
+import { notificationsService } from './notificationsService';
 
 export interface UnlockParams {
   employerId: string;
@@ -16,6 +17,18 @@ export const paymentsService = {
       return mockTransactions.filter((tx) => tx.employerId === employerId);
     }
     return [...mockTransactions];
+  },
+
+  async getTransactionById(id: string): Promise<PhoneUnlockTransaction | null> {
+    return mockTransactions.find((tx) => tx.id === id) || null;
+  },
+
+  async getTotalPayments(employerId?: string): Promise<{ total: number; count: number }> {
+    const transactions = employerId
+      ? mockTransactions.filter((tx) => tx.employerId === employerId)
+      : mockTransactions;
+    const total = transactions.reduce((sum, tx) => sum + tx.amount, 0);
+    return { total, count: transactions.length };
   },
 
   async unlockWorkerPhone(params: UnlockParams): Promise<{ success: boolean; unmaskedPhone: string; transaction: PhoneUnlockTransaction }> {
@@ -46,6 +59,19 @@ export const paymentsService = {
     };
 
     mockTransactions.unshift(transaction);
+
+    // Create payment confirmation notification
+    await notificationsService.createPaymentConfirmationNotification(
+      params.employerId,
+      transaction.id,
+      amount
+    );
+
+    // Create phone unlock notification
+    await notificationsService.createPhoneUnlockNotification(
+      params.employerId,
+      transaction.id
+    );
 
     return {
       success: true,

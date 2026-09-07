@@ -5,6 +5,7 @@ import { WorkerProfile } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { useUnlock } from '@/context/UnlockContext';
 import { useToast } from '@/context/ToastContext';
+import { employersService } from '@/services/employersService';
 import {
   X,
   Lock,
@@ -17,6 +18,8 @@ import {
   Building2,
   Copy,
   ExternalLink,
+  AlertCircle,
+  Briefcase,
 } from 'lucide-react';
 
 interface UnlockPhoneModalProps {
@@ -43,13 +46,22 @@ export function UnlockPhoneModal({
     isWorkerUnlocked(worker.id) ? worker.phone : null
   );
   const [copied, setCopied] = useState(false);
+  const [unlockCheck, setUnlockCheck] = useState<{ canUnlock: boolean; reason?: string } | null>(null);
 
   if (!isOpen) return null;
 
   const hasFreeUnlock = employerProfile.freeUnlocksRemaining > 0;
   const isEmployer = role === 'employer';
+  const hasPostedFirstJob = employerProfile.hasPostedFirstJob;
 
   const handleUnlock = async (useFree = false) => {
+    // Check if employer can unlock (first job requirement)
+    const check = await employersService.canUnlockPhone(employerProfile.id);
+    if (!check.canUnlock) {
+      showToast('Unlock Not Available', check.reason || 'Unable to unlock phone number', 'warning');
+      return;
+    }
+
     setIsProcessing(true);
     try {
       // Simulate real Ethiopian payment gateway delay (1.2s)
@@ -205,17 +217,39 @@ export function UnlockPhoneModal({
                 </div>
               )}
 
+              {/* First Job Requirement Warning */}
+              {isEmployer && !hasPostedFirstJob && (
+                <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 shrink-0 text-rose-600 mt-0.5" />
+                  <div>
+                    <h5 className="font-bold text-rose-900 uppercase tracking-wide text-[11px]">
+                      First Job Required
+                    </h5>
+                    <p className="text-rose-800 mt-1">
+                      You must post at least one job or internship before unlocking worker phone numbers. This ensures employers contribute to the marketplace.
+                    </p>
+                    <button
+                      onClick={() => window.location.href = '/employer/jobs/new'}
+                      className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-700 hover:bg-rose-800 text-white font-semibold text-xs transition shadow-sm"
+                    >
+                      <Briefcase className="w-3.5 h-3.5" />
+                      Post Your First Job
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Free Unlock Available Promo Banner */}
-              {hasFreeUnlock ? (
+              {hasFreeUnlock && hasPostedFirstJob ? (
                 <div className="p-4 rounded-xl bg-emerald-50/90 border border-emerald-200 flex items-start justify-between gap-3">
                   <div className="flex items-start gap-2.5">
                     <Gift className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                     <div>
                       <h5 className="text-xs font-bold text-emerald-900 uppercase tracking-wide">
-                        Special First-Job Bonus Available!
+                        First-Job Bonus Earned!
                       </h5>
                       <p className="text-xs text-emerald-800 mt-0.5">
-                        You have <span className="font-bold">{employerProfile.freeUnlocksRemaining} free unlock</span> remaining from posting your job!
+                        You have <span className="font-bold">{employerProfile.freeUnlocksRemaining} free unlock</span> from posting your first job!
                       </p>
                     </div>
                   </div>
@@ -227,13 +261,13 @@ export function UnlockPhoneModal({
                     {isProcessing ? 'Unlocking...' : 'Use Free Unlock (0 ETB)'}
                   </button>
                 </div>
-              ) : (
-                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-center justify-between">
+              ) : hasPostedFirstJob ? (
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-center justify-between">
                   <span>
-                    💡 <span className="font-semibold">First-Job Rule:</span> Employers who publish a job opportunity receive 1 free phone unlock!
+                    💡 <span className="font-semibold">No Free Unlocks Remaining:</span> Additional unlocks cost 100 ETB each.
                   </span>
                 </div>
-              )}
+              ) : null}
 
               {/* Fee Breakdown */}
               <div className="border border-slate-200 rounded-xl p-4 space-y-2">

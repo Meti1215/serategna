@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { applicationsService } from '@/services/applicationsService';
+import { workersService } from '@/services/workersService';
 import {
   X,
   Send,
@@ -14,6 +15,9 @@ import {
   Phone,
   Mail,
   GraduationCap,
+  MapPin,
+  Award,
+  Star,
 } from 'lucide-react';
 
 interface ApplyModalProps {
@@ -39,12 +43,32 @@ export function ApplyModal({
   const [fullName, setFullName] = useState(user?.name || 'Abebe Kebede');
   const [email, setEmail] = useState(user?.email || 'abebe.kebede.electric@gmail.com');
   const [phone, setPhone] = useState('+251 91 142 8892');
+  const [location, setLocation] = useState('Addis Ababa');
+  const [region, setRegion] = useState('Addis Ababa');
+  const [experience, setExperience] = useState('5 years');
+  const [skills, setSkills] = useState('Technical Troubleshooting, Equipment Operation');
   const [coverLetter, setCoverLetter] = useState(
     `Dear Hiring Team at ${companyName},\n\nI am excited to submit my application for the ${opportunityTitle} position. With my background and hands-on experience in Ethiopia, I am confident in adding immediate value to your team.`
   );
   const [cvFile, setCvFile] = useState<string>('Serategna_Verified_Profile_CV.pdf');
+  const [certificates, setCertificates] = useState<string[]>(['COC Level IV']);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  useEffect(() => {
+    if (user?.role === 'worker' && user.id) {
+      workersService.getWorkerById(user.id).then((worker) => {
+        if (worker) {
+          setPhone(worker.phone);
+          setLocation(worker.city);
+          setRegion(worker.region);
+          setExperience(`${worker.experienceYears} years`);
+          setSkills(worker.skills.join(', '));
+          setCertificates(worker.certificates.map(c => c.title));
+        }
+      });
+    }
+  }, [user]);
 
   if (!isOpen) return null;
 
@@ -63,10 +87,19 @@ export function ApplyModal({
         applicantId: user?.id || 'worker-temp',
         applicantName: fullName,
         applicantAvatar: user?.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300',
+        applicantProfession: user?.titleOrCompany || 'Worker',
         applicantEmail: email,
         applicantPhone: phone,
+        applicantLocation: location,
+        applicantRegion: region,
+        applicantExperience: experience,
+        applicantSkills: skills.split(',').map(s => s.trim()),
+        applicantRating: 4.5,
+        applicantTotalReviews: 10,
         coverLetter,
         cvFileName: cvFile,
+        cvFileUrl: `/files/cvs/${cvFile}`,
+        certificates: certificates,
       });
 
       setIsSuccess(true);
@@ -177,6 +210,67 @@ export function ApplyModal({
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    City / Location
+                  </label>
+                  <div className="relative">
+                    <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                    <input
+                      type="text"
+                      required
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Region
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={region}
+                    onChange={(e) => setRegion(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Years of Experience
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={experience}
+                    onChange={(e) => setExperience(e.target.value)}
+                    placeholder="e.g. 5 years"
+                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Skills (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={skills}
+                    onChange={(e) => setSkills(e.target.value)}
+                    placeholder="e.g. Welding, Safety, Teamwork"
+                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Attach CV / Resume / Academic Record
@@ -199,6 +293,20 @@ export function ApplyModal({
                       }}
                     />
                   </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Certificates (from profile)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {certificates.map((cert, idx) => (
+                    <div key={idx} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-50 border border-purple-200 text-xs font-medium text-purple-800">
+                      <Award className="w-3.5 h-3.5" />
+                      <span>{cert}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 

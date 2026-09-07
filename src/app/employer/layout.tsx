@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
 import {
   LayoutDashboard,
   Users,
@@ -16,6 +18,7 @@ import {
   Gift,
   LogOut,
   ShieldCheck,
+  User,
 } from 'lucide-react';
 
 export default function EmployerDashboardLayout({
@@ -26,6 +29,7 @@ export default function EmployerDashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const { role, employerProfile, switchDemoPersona } = useAuth();
+  const [notificationOpen, setNotificationOpen] = useState(false);
 
   useEffect(() => {
     if (role !== 'employer' && role !== 'admin') {
@@ -43,6 +47,7 @@ export default function EmployerDashboardLayout({
     { name: 'Manage Internships', href: '/employer/internships', icon: Briefcase },
     { name: 'Review Applications', href: '/employer/applications', icon: FileCheck },
     { name: 'Phone Unlocks & Payments', href: '/employer/unlocks', icon: Lock },
+    { name: 'Manage Profile', href: '/employer/profile', icon: User },
   ];
 
   return (
@@ -77,6 +82,11 @@ export default function EmployerDashboardLayout({
           >
             ← Public Marketplace
           </Link>
+
+          <div className="relative">
+            <NotificationBell onClick={() => setNotificationOpen(!notificationOpen)} />
+            <NotificationDropdown isOpen={notificationOpen} onClose={() => setNotificationOpen(false)} />
+          </div>
 
           <button
             onClick={() => switchDemoPersona('guest')}

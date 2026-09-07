@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { internshipsService } from '@/services/internshipsService';
+import { employersService } from '@/services/employersService';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { mockRegions } from '@/data/mockRegions';
@@ -16,6 +17,7 @@ import {
   CheckCircle2,
   Save,
   Users,
+  Gift,
 } from 'lucide-react';
 
 export default function PostInternshipPage() {
@@ -72,11 +74,22 @@ export default function PostInternshipPage() {
         isFeatured: false,
       });
 
-      showToast(
-        'Internship Posted!',
-        'Your university internship program is now open for student applications.',
-        'success'
-      );
+      // Increment internship count and grant free unlock if this is first job/internship
+      const result = await employersService.incrementPostedInternships(employerProfile.id);
+
+      if (result.freeUnlockGranted) {
+        showToast(
+          'Internship Posted + Free Unlock Earned!',
+          'Your internship is now live on Serategna. You have received 1 Free Worker Phone Unlock (worth 100 ETB)!',
+          'success'
+        );
+      } else {
+        showToast(
+          'Internship Posted!',
+          'Your university internship program is now open for student applications.',
+          'success'
+        );
+      }
 
       router.push('/employer/internships');
     } catch (err) {
@@ -88,6 +101,22 @@ export default function PostInternshipPage() {
 
   return (
     <div className="space-y-6">
+      {/* First-Job Rule Callout */}
+      {!employerProfile.hasPostedFirstJob && (
+        <div className="p-6 rounded-3xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-3">
+          <Gift className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <h2 className="font-bold text-sm uppercase tracking-wide text-amber-950">
+              First-Job Bonus Rule
+            </h2>
+            <p className="text-xs text-amber-800 mt-0.5 leading-relaxed">
+              By publishing this internship on Serategna, you contribute authentic employment to the platform.
+              Upon publishing, you will instantly receive <strong>1 Free Worker Phone Unlock</strong> (worth 100 ETB)!
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
         <div className="pb-4 border-b border-slate-100">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-bold mb-2">

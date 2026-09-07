@@ -250,17 +250,31 @@ export const workersService = {
       );
     }
 
-    if (filters.sortBy) {
-      if (filters.sortBy === 'rating') {
-        results.sort((a, b) => b.rating - a.rating);
-      } else if (filters.sortBy === 'experience') {
-        results.sort((a, b) => b.experienceYears - a.experienceYears);
-      } else if (filters.sortBy === 'newest') {
-        results.sort(() => Math.random() - 0.5); // legacy mocks have no createdAt
-      }
+    // Sorting - featured workers always come first
+    const now = new Date().toISOString();
+    const activeFeatured = results.filter(
+      (w) => w.isFeatured && w.featuredIsActive && w.featuredStartDate && w.featuredEndDate && w.featuredStartDate <= now && w.featuredEndDate >= now
+    );
+    const nonFeatured = results.filter(
+      (w) => !(w.isFeatured && w.featuredIsActive && w.featuredStartDate && w.featuredEndDate && w.featuredStartDate <= now && w.featuredEndDate >= now)
+    );
+
+    // Sort featured by priority
+    activeFeatured.sort((a, b) => (b.featuredPriority || 0) - (a.featuredPriority || 0));
+
+    // Sort non-featured by selected criteria
+    if (filters.sortBy === 'rating') {
+      nonFeatured.sort((a, b) => b.rating - a.rating);
+    } else if (filters.sortBy === 'experience') {
+      nonFeatured.sort((a, b) => b.experienceYears - a.experienceYears);
+    } else if (filters.sortBy === 'newest') {
+      nonFeatured.sort((a, b) => b.id.localeCompare(a.id));
+    } else {
+      // 'recommended' or default: rating + recency
+      nonFeatured.sort((a, b) => b.rating - a.rating || b.totalReviews - a.totalReviews);
     }
 
-    return results;
+    return [...activeFeatured, ...nonFeatured];
   },
 
   async getWorkerById(id: string): Promise<WorkerProfile | null> {
@@ -286,5 +300,28 @@ export const workersService = {
       .filter((w) => w.isFeatured && !newIds.has(w.id))
       .map((w) => ({ ...w, phone: '' }));
     return [...fromNew, ...legacy].slice(0, 6);
+  },
+
+  async setWorkerFeatured(
+    workerId: string,
+    isFeatured: boolean,
+    startDate?: string,
+    endDate?: string,
+    priority: number = 1
+  ): Promise<WorkerProfile | null> {
+    const worker = mockWorkers.find((w) => w.id === workerId);
+    if (!worker) return null;
+
+    worker.isFeatured = isFeatured;
+    worker.featuredIsActive = isFeatured;
+    worker.featuredStartDate = startDate;
+    worker.featuredEndDate = endDate;
+    worker.featuredPriority = priority;
+
+    return { ...worker };
+  },
+
+  async removeWorkerFeatured(workerId: string): Promise<WorkerProfile | null> {
+    return this.setWorkerFeatured(workerId, false);
   },
 };

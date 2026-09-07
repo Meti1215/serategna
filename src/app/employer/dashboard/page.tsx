@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { mockApplications } from '@/services/applicationsService';
+import { mockApplications, applicationsService } from '@/services/applicationsService';
+import { paymentsService } from '@/services/paymentsService';
 import {
   Users,
   Lock,
@@ -17,10 +18,26 @@ import {
   ArrowRight,
   Phone,
   CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
 
 export default function EmployerDashboardPage() {
   const { employerProfile } = useAuth();
+  const [totalPayments, setTotalPayments] = useState({ total: 0, count: 0 });
+  const [applicationsCount, setApplicationsCount] = useState(0);
+  const [shortlistedCount, setShortlistedCount] = useState(0);
+
+  useEffect(() => {
+    async function loadStats() {
+      const payments = await paymentsService.getTotalPayments(employerProfile.id);
+      setTotalPayments(payments);
+
+      const apps = await applicationsService.getApplications();
+      setApplicationsCount(apps.length);
+      setShortlistedCount(apps.filter(a => a.status === 'Shortlisted').length);
+    }
+    loadStats();
+  }, [employerProfile.id]);
 
   const stats = [
     { label: 'Workers Viewed', value: '128', icon: Users, color: 'text-blue-600' },
@@ -30,7 +47,7 @@ export default function EmployerDashboardPage() {
       icon: Lock,
       color: 'text-emerald-600',
     },
-    { label: 'Total Payments', value: '300 ETB', icon: CreditCard, color: 'text-slate-800' },
+    { label: 'Total Payments', value: `${totalPayments.total} ETB`, icon: CreditCard, color: 'text-slate-800' },
     { label: 'Job Posts', value: employerProfile.postedJobsCount.toString(), icon: Briefcase, color: 'text-amber-600' },
     {
       label: 'Internship Posts',
@@ -38,47 +55,112 @@ export default function EmployerDashboardPage() {
       icon: GraduationCap,
       color: 'text-purple-600',
     },
-    { label: 'Applications Received', value: '18', icon: FileCheck, color: 'text-indigo-600' },
-    { label: 'Shortlisted Candidates', value: '6', icon: CheckCircle2, color: 'text-emerald-700' },
+    { label: 'Applications Received', value: applicationsCount.toString(), icon: FileCheck, color: 'text-indigo-600' },
+    { label: 'Shortlisted Candidates', value: shortlistedCount.toString(), icon: CheckCircle2, color: 'text-emerald-700' },
     { label: 'Saved Workers', value: '2', icon: Bookmark, color: 'text-amber-500' },
   ];
 
   return (
     <div className="space-y-6">
-      {/* First-Job Rule Incentive Status Banner */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-amber-500/15 via-emerald-500/10 to-white border-2 border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-2xl bg-amber-500 text-white shrink-0">
-            <Gift className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-slate-900">
-                Special Employer Bonus Status
-              </h2>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-200 text-amber-900">
-                Active
-              </span>
+      {/* First-Job Rule Status Banner */}
+      {!employerProfile.hasPostedFirstJob ? (
+        <div className="p-6 rounded-3xl bg-gradient-to-r from-rose-500/15 via-amber-500/10 to-white border-2 border-rose-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-2xl bg-rose-500 text-white shrink-0">
+              <AlertCircle className="w-6 h-6" />
             </div>
-            <p className="text-xs text-slate-600 mt-1">
-              You have{' '}
-              <strong className="text-slate-900">
-                {employerProfile.freeUnlocksRemaining} Free Worker Phone Unlock
-              </strong>{' '}
-              ready to use (0 ETB) on your next candidate.
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-slate-900">
+                  Post Your First Job to Unlock Features
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-200 text-rose-900">
+                  Required
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 mt-1">
+                You must post at least one job or internship before you can unlock worker phone numbers. This ensures employers contribute to the marketplace.
+              </p>
+              <p className="text-xs text-emerald-700 font-semibold mt-1">
+                🎁 Reward: <strong>1 Free Phone Unlock</strong> after your first job post!
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href="/employer/jobs/new"
+              className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm transition"
+            >
+              Post Your First Job
+            </Link>
           </div>
         </div>
+      ) : employerProfile.freeUnlocksRemaining > 0 ? (
+        <div className="p-6 rounded-3xl bg-gradient-to-r from-emerald-500/15 via-amber-500/10 to-white border-2 border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-2xl bg-emerald-500 text-white shrink-0">
+              <Gift className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-slate-900">
+                  First-Job Bonus Earned!
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-200 text-emerald-900">
+                  Available
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 mt-1">
+                You have{' '}
+                <strong className="text-slate-900">
+                  {employerProfile.freeUnlocksRemaining} Free Worker Phone Unlock
+                </strong>{' '}
+                ready to use (0 ETB) on your next candidate.
+              </p>
+            </div>
+          </div>
 
-        <div className="flex items-center gap-2">
-          <Link
-            href="/workers"
-            className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm transition"
-          >
-            Use Free Unlock on Worker
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/workers"
+              className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm transition"
+            >
+              Use Free Unlock on Worker
+            </Link>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="p-6 rounded-3xl bg-gradient-to-r from-slate-500/15 via-slate-500/10 to-white border-2 border-slate-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-2xl bg-slate-500 text-white shrink-0">
+              <Lock className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-slate-900">
+                  Phone Unlocks Available
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-200 text-slate-900">
+                  Paid
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 mt-1">
+                Your free unlock has been used. Additional phone unlocks cost <strong>100 ETB each</strong>.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href="/workers"
+              className="px-5 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-800 text-white font-bold text-xs shadow-sm transition"
+            >
+              Find Workers (100 ETB/unlock)
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

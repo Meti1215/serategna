@@ -1,33 +1,57 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
-import { mockNews } from '@/data/mockNews';
+import { newsService } from '@/services/newsService';
+import { NewsArticle, NewsCategory } from '@/types';
 import { Clock, ArrowRight, Sparkles, Newspaper, Search } from 'lucide-react';
 
-const categories = [
+const categories: (NewsCategory | 'All')[] = [
   'All',
   'Platform Announcements',
   'Worker Rights',
   'Career Advice',
   'Job Market',
+  'Employer Advice',
+  'Training Opportunities',
+  'Recruitment Tips',
 ];
 
 export default function NewsListingPage() {
-  const [activeCat, setActiveCat] = useState('All');
+  const [activeCat, setActiveCat] = useState<'All' | NewsCategory>('All');
   const [query, setQuery] = useState('');
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [featured, setFeatured] = useState<NewsArticle | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const featured = mockNews.find((n) => n.isFeatured) || mockNews[0];
+  useEffect(() => {
+    async function loadArticles() {
+      setIsLoading(true);
+      const [allArticles, featuredArticle] = await Promise.all([
+        newsService.getArticles(activeCat === 'All' ? undefined : activeCat),
+        newsService.getFeaturedArticle(),
+      ]);
+      
+      let filtered = allArticles;
+      if (query) {
+        const searchResults = await newsService.searchArticles(query);
+        filtered = searchResults.filter(a => 
+          activeCat === 'All' || a.category === activeCat
+        );
+      }
+      
+      setArticles(filtered);
+      setFeatured(featuredArticle);
+      setIsLoading(false);
+    }
+    loadArticles();
+  }, [activeCat, query]);
 
-  const filtered = mockNews.filter((n) => {
-    const matchesCat = activeCat === 'All' || n.category === activeCat;
-    const matchesQuery =
-      n.title.toLowerCase().includes(query.toLowerCase()) ||
-      n.summary.toLowerCase().includes(query.toLowerCase());
-    return matchesCat && matchesQuery;
-  });
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
@@ -46,7 +70,22 @@ export default function NewsListingPage() {
             on our phone privacy marketplace.
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center gap-2">
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <form onSubmit={handleSearch} className="flex-1 max-w-md">
+              <div className="relative">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search news articles..."
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                />
+              </div>
+            </form>
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center gap-2">
             {categories.map((c) => (
               <button
                 key={c}
@@ -113,49 +152,64 @@ export default function NewsListingPage() {
         )}
 
         {/* Article Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((article) => (
-            <div
-              key={article.id}
-              className="bg-white rounded-3xl border border-slate-200 overflow-hidden hover:shadow-lg hover:border-emerald-500 transition-all flex flex-col justify-between"
-            >
-              <div>
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={article.coverImage}
-                    alt={article.title}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                  />
-                  <span className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-900/80 text-white backdrop-blur-md">
-                    {article.category}
-                  </span>
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="inline-block w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-sm text-slate-500 mt-4">Loading articles...</p>
+          </div>
+        ) : articles.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-3xl border border-slate-200">
+            <Newspaper className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+            <h3 className="text-sm font-bold text-slate-900 mb-1">No Articles Found</h3>
+            <p className="text-xs text-slate-500">
+              {query ? 'Try adjusting your search terms' : 'No articles available in this category'}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {articles.map((article: NewsArticle) => (
+              <div
+                key={article.id}
+                className="bg-white rounded-3xl border border-slate-200 overflow-hidden hover:shadow-lg hover:border-emerald-500 transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="relative h-48 overflow-hidden">
+                    <img
+                      src={article.coverImage}
+                      alt={article.title}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                    />
+                    <span className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-900/80 text-white backdrop-blur-md">
+                      {article.category}
+                    </span>
+                  </div>
+
+                  <div className="p-6">
+                    <Link href={`/news/${article.slug}`}>
+                      <h3 className="font-bold text-slate-900 text-base hover:text-emerald-700 transition line-clamp-2">
+                        {article.title}
+                      </h3>
+                    </Link>
+                    <p className="text-xs text-slate-600 mt-2 line-clamp-3 leading-relaxed">
+                      {article.summary}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="p-6">
-                  <Link href={`/news/${article.slug}`}>
-                    <h3 className="font-bold text-slate-900 text-base hover:text-emerald-700 transition line-clamp-2">
-                      {article.title}
-                    </h3>
+                <div className="px-6 pb-6 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                  <span className="text-[11px]">{article.date}</span>
+                  <Link
+                    href={`/news/${article.slug}`}
+                    className="font-bold text-emerald-700 hover:text-emerald-800 text-xs flex items-center gap-1"
+                  >
+                    <span>Read</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
-                  <p className="text-xs text-slate-600 mt-2 line-clamp-3 leading-relaxed">
-                    {article.summary}
-                  </p>
                 </div>
               </div>
-
-              <div className="px-6 pb-6 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                <span className="text-[11px]">{article.date}</span>
-                <Link
-                  href={`/news/${article.slug}`}
-                  className="font-bold text-emerald-700 hover:text-emerald-800 text-xs flex items-center gap-1"
-                >
-                  <span>Read</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </main>
 
       <Footer />

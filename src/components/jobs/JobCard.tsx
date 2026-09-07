@@ -4,7 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import { Job } from '@/types';
 import { useSaved } from '@/context/SavedContext';
-import { MapPin, Briefcase, Bookmark, Sparkles, Clock, CheckCircle2 } from 'lucide-react';
+import { VerifiedEmployerBadge } from '@/components/common/VerifiedEmployerBadge';
+import { MapPin, Briefcase, Bookmark, Sparkles, Clock } from 'lucide-react';
 
 export function JobCard({ job }: { job: Job }) {
   const { isSavedJob, toggleSaveJob } = useSaved();
@@ -46,9 +47,7 @@ export function JobCard({ job }: { job: Job }) {
             <div className="flex items-center gap-1.5 text-xs text-slate-600">
               <span className="font-semibold truncate">{job.company}</span>
               {job.isVerifiedCompany && (
-                <span title="Verified Employer">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                </span>
+                <VerifiedEmployerBadge size="sm" showText={false} />
               )}
             </div>
             <Link

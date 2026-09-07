@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
 import {
   LayoutDashboard,
   User,
@@ -24,6 +26,7 @@ export default function WorkerDashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const { role, switchDemoPersona } = useAuth();
+  const [notificationOpen, setNotificationOpen] = useState(false);
 
   useEffect(() => {
     if (role !== 'worker' && role !== 'admin') {
@@ -67,6 +70,11 @@ export default function WorkerDashboardLayout({
           >
             ← Back to Public Website
           </Link>
+
+          <div className="relative">
+            <NotificationBell onClick={() => setNotificationOpen(!notificationOpen)} />
+            <NotificationDropdown isOpen={notificationOpen} onClose={() => setNotificationOpen(false)} />
+          </div>
 
           <button
             onClick={() => switchDemoPersona('guest')}

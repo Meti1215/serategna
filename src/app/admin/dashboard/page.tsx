@@ -1,11 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { mockWorkers } from '@/data/mockWorkers';
 import { mockJobs } from '@/data/mockJobs';
 import { mockInternships } from '@/data/mockInternships';
 import { mockReviews, mockTransactions } from '@/data/mockReviews';
+import { employersService } from '@/services/employersService';
 import { useToast } from '@/context/ToastContext';
+import { EmployerProfile } from '@/types';
 import {
   Users,
   Building,
@@ -23,16 +26,23 @@ import {
   FileText,
   AlertTriangle,
   Smartphone,
+  MapPin,
+  ArrowRight,
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'workers' | 'employers' | 'jobs' | 'payments' | 'reviews' | 'reports'
+    'overview' | 'workers' | 'employers' | 'jobs' | 'payments' | 'reviews' | 'reports' | 'news' | 'advertisements' | 'featured-workers' | 'featured-jobs'
   >('overview');
 
   const [workersList, setWorkersList] = useState(mockWorkers);
   const [reviewsList, setReviewsList] = useState(mockReviews);
+  const [employersList, setEmployersList] = useState<EmployerProfile[]>([]);
+
+  useEffect(() => {
+    employersService.getAllEmployers().then(setEmployersList);
+  }, []);
 
   const handleApproveWorker = (id: string) => {
     setWorkersList((prev) =>
@@ -70,6 +80,54 @@ export default function AdminDashboardPage() {
     showToast('Review Removed', 'Inappropriate review has been deleted.', 'error');
   };
 
+  const handleApproveEmployer = async (id: string) => {
+    try {
+      await employersService.approveEmployerVerification(id, 'admin');
+      setEmployersList((prev) =>
+        prev.map((e) =>
+          e.id === id
+            ? {
+                ...e,
+                isVerified: true,
+                verification: {
+                  ...e.verification,
+                  status: 'Verified',
+                  verifiedAt: new Date().toISOString(),
+                },
+              }
+            : e
+        )
+      );
+      showToast('Employer Verified', 'Business credentials have been approved.', 'success');
+    } catch (error) {
+      showToast('Error', 'Failed to approve employer verification.', 'error');
+    }
+  };
+
+  const handleRejectEmployer = async (id: string, reason: string) => {
+    try {
+      await employersService.rejectEmployerVerification(id, reason, 'admin');
+      setEmployersList((prev) =>
+        prev.map((e) =>
+          e.id === id
+            ? {
+                ...e,
+                isVerified: false,
+                verification: {
+                  ...e.verification,
+                  status: 'Document Uploaded',
+                  rejectionReason: reason,
+                },
+              }
+            : e
+        )
+      );
+      showToast('Verification Rejected', 'Employer has been asked to provide additional documents.', 'warning');
+    } catch (error) {
+      showToast('Error', 'Failed to reject employer verification.', 'error');
+    }
+  };
+
   const stats = [
     { label: 'Total Workers', value: '15,240', change: '+14% this month', icon: Users, color: 'text-emerald-400' },
     { label: 'Total Employers', value: '2,450', change: '+8% this month', icon: Building, color: 'text-blue-400' },
@@ -102,13 +160,18 @@ export default function AdminDashboardPage() {
           {[
             { key: 'overview', label: 'Overview' },
             { key: 'workers', label: 'Workers Audit' },
+            { key: 'employers', label: 'Employer Verification' },
             { key: 'jobs', label: 'Jobs & Internships' },
             { key: 'payments', label: 'Payments (184k ETB)' },
             { key: 'reviews', label: 'Reviews Moderation' },
+            { key: 'news', label: 'News Management' },
+            { key: 'advertisements', label: 'Advertisements' },
+            { key: 'featured-workers', label: 'Featured Workers' },
+            { key: 'featured-jobs', label: 'Featured Jobs' },
           ].map((t) => (
             <button
               key={t.key}
-              onClick={() => setActiveTab(t.key as 'overview' | 'workers' | 'employers' | 'jobs' | 'payments' | 'reviews' | 'reports')}
+              onClick={() => setActiveTab(t.key as any)}
               className={`px-3.5 py-2 rounded-xl font-bold transition ${
                 activeTab === t.key
                   ? 'bg-purple-700 text-white shadow-md'
@@ -265,7 +328,112 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* TAB 3: JOBS & INTERNSHIPS MODERATION */}
+      {/* TAB 3: EMPLOYER VERIFICATION */}
+      {activeTab === 'employers' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between pb-2">
+            <h2 className="text-base font-bold text-white">Employer Verification Queue</h2>
+            <span className="text-xs text-slate-400">{employersList.length} employers in database</span>
+          </div>
+
+          <div className="bg-slate-800 rounded-3xl border border-slate-700 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-900/80 border-b border-slate-700 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                  <tr>
+                    <th className="py-3 px-4">Company</th>
+                    <th className="py-3 px-4">Contact Person</th>
+                    <th className="py-3 px-4">Business Type</th>
+                    <th className="py-3 px-4">Location</th>
+                    <th className="py-3 px-4">Verification Status</th>
+                    <th className="py-3 px-4">Documents</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700/60">
+                  {employersList.map((employer) => (
+                    <tr key={employer.id} className="hover:bg-slate-700/40 transition">
+                      <td className="py-3.5 px-4">
+                        <div>
+                          <span className="font-bold text-white">{employer.companyName}</span>
+                          <p className="text-[11px] text-slate-400">{employer.email}</p>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4 text-slate-300 font-medium">{employer.name}</td>
+
+                      <td className="py-3.5 px-4 text-slate-400">{employer.businessType}</td>
+
+                      <td className="py-3.5 px-4 text-slate-400">
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-slate-500" />
+                          <span>{employer.region}</span>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                            employer.verification.status === 'Verified'
+                              ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
+                              : employer.verification.status === 'Pending Verification'
+                              ? 'bg-amber-950 text-amber-400 border border-amber-800'
+                              : 'bg-slate-700 text-slate-400 border border-slate-600'
+                          }`}
+                        >
+                          {employer.verification.status}
+                        </span>
+                      </td>
+
+                      <td className="py-3.5 px-4 text-slate-400">
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1 text-[10px]">
+                            <FileText className="w-3 h-3" />
+                            <span>License: {employer.verification.businessLicenseUploaded ? '✓' : '—'}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-[10px]">
+                            <FileText className="w-3 h-3" />
+                            <span>Tax ID: {employer.verification.taxIdUploaded ? '✓' : '—'}</span>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4 text-right space-x-2">
+                        {employer.verification.status !== 'Verified' && (
+                          <>
+                            <button
+                              onClick={() => handleApproveEmployer(employer.id)}
+                              className="px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-[11px] transition"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => {
+                                const reason = prompt('Enter rejection reason:');
+                                if (reason) handleRejectEmployer(employer.id, reason);
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-rose-900/60 hover:bg-rose-800 text-rose-200 text-[11px] transition"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        {employer.verification.status === 'Verified' && (
+                          <span className="px-2.5 py-1 rounded-lg bg-emerald-900/30 text-emerald-400 text-[11px] font-medium">
+                            ✓ Verified
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 4: JOBS & INTERNSHIPS MODERATION */}
       {activeTab === 'jobs' && (
         <div className="space-y-6">
           <div>
@@ -406,6 +574,94 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 6: NEWS MANAGEMENT */}
+      {activeTab === 'news' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between pb-2">
+            <h2 className="text-base font-bold text-white">News Management</h2>
+            <p className="text-xs text-slate-400">Create, edit, and publish news articles.</p>
+          </div>
+          <div className="p-8 rounded-2xl bg-slate-800 border border-slate-700 text-center">
+            <FileText className="w-12 h-12 text-purple-400 mx-auto mb-3" />
+            <h3 className="text-sm font-bold text-white mb-2">News Management</h3>
+            <p className="text-xs text-slate-400 mb-4">Manage news articles, categories, and featured content.</p>
+            <Link
+              href="/admin/news"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition"
+            >
+              Go to News Management
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 7: ADVERTISEMENTS */}
+      {activeTab === 'advertisements' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between pb-2">
+            <h2 className="text-base font-bold text-white">Advertisement Management</h2>
+            <p className="text-xs text-slate-400">Manage platform advertisements and sponsored content.</p>
+          </div>
+          <div className="p-8 rounded-2xl bg-slate-800 border border-slate-700 text-center">
+            <FileText className="w-12 h-12 text-purple-400 mx-auto mb-3" />
+            <h3 className="text-sm font-bold text-white mb-2">Advertisement Management</h3>
+            <p className="text-xs text-slate-400 mb-4">Approve, activate, and manage advertisements.</p>
+            <Link
+              href="/admin/advertisements"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition"
+            >
+              Go to Advertisement Management
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 8: FEATURED WORKERS */}
+      {activeTab === 'featured-workers' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between pb-2">
+            <h2 className="text-base font-bold text-white">Featured Workers Management</h2>
+            <p className="text-xs text-slate-400">Manage worker promotions and featured listings.</p>
+          </div>
+          <div className="p-8 rounded-2xl bg-slate-800 border border-slate-700 text-center">
+            <Sparkles className="w-12 h-12 text-amber-400 mx-auto mb-3" />
+            <h3 className="text-sm font-bold text-white mb-2">Featured Workers</h3>
+            <p className="text-xs text-slate-400 mb-4">Feature workers to give them higher visibility in search results.</p>
+            <Link
+              href="/admin/featured-workers"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition"
+            >
+              Go to Featured Workers
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 9: FEATURED JOBS */}
+      {activeTab === 'featured-jobs' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between pb-2">
+            <h2 className="text-base font-bold text-white">Featured Jobs Management</h2>
+            <p className="text-xs text-slate-400">Manage job promotions and featured listings.</p>
+          </div>
+          <div className="p-8 rounded-2xl bg-slate-800 border border-slate-700 text-center">
+            <Sparkles className="w-12 h-12 text-amber-400 mx-auto mb-3" />
+            <h3 className="text-sm font-bold text-white mb-2">Featured Jobs</h3>
+            <p className="text-xs text-slate-400 mb-4">Feature jobs to give them higher visibility in job listings.</p>
+            <Link
+              href="/admin/featured-jobs"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition"
+            >
+              Go to Featured Jobs
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       )}

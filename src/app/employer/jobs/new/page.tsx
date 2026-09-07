@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { jobsService } from '@/services/jobsService';
+import { employersService } from '@/services/employersService';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { mockCategories } from '@/data/mockCategories';
@@ -69,13 +70,24 @@ export default function PostJobPage() {
         isFeatured: false,
       });
 
+      // Increment job count and grant free unlock if this is first job
+      const result = await employersService.incrementPostedJobs(employerProfile.id);
+      
       markFirstJobPosted();
 
-      showToast(
-        'Job Published Successfully!',
-        'Your job is now live on Serategna. You have received 1 Free Worker Phone Unlock!',
-        'success'
-      );
+      if (result.freeUnlockGranted) {
+        showToast(
+          'Job Published + Free Unlock Earned!',
+          'Your job is now live on Serategna. You have received 1 Free Worker Phone Unlock (worth 100 ETB)!',
+          'success'
+        );
+      } else {
+        showToast(
+          'Job Published Successfully!',
+          'Your job is now live on Serategna.',
+          'success'
+        );
+      }
 
       router.push('/employer/jobs');
     } catch (err) {

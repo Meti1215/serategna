@@ -47,7 +47,22 @@ export const jobsService = {
       results = results.filter((j) => j.experienceLevel === filters.experienceLevel);
     }
 
-    return results;
+    // Sorting - featured jobs always come first
+    const now = new Date().toISOString();
+    const activeFeatured = results.filter(
+      (j) => j.isFeatured && j.featuredIsActive && j.featuredStartDate && j.featuredEndDate && j.featuredStartDate <= now && j.featuredEndDate >= now
+    );
+    const nonFeatured = results.filter(
+      (j) => !(j.isFeatured && j.featuredIsActive && j.featuredStartDate && j.featuredEndDate && j.featuredStartDate <= now && j.featuredEndDate >= now)
+    );
+
+    // Sort featured by priority
+    activeFeatured.sort((a, b) => (b.featuredPriority || 0) - (a.featuredPriority || 0));
+
+    // Sort non-featured by posted date (newest first)
+    nonFeatured.sort((a, b) => new Date(b.postedDate).getTime() - new Date(a.postedDate).getTime());
+
+    return [...activeFeatured, ...nonFeatured];
   },
 
   async getJobById(id: string): Promise<Job | null> {
@@ -56,7 +71,33 @@ export const jobsService = {
   },
 
   async getFeaturedJobs(): Promise<Job[]> {
-    return mockJobs.filter((j) => j.isFeatured);
+    const now = new Date().toISOString();
+    return mockJobs
+      .filter((j) => j.isFeatured && j.featuredIsActive && j.featuredStartDate && j.featuredEndDate && j.featuredStartDate <= now && j.featuredEndDate >= now)
+      .sort((a, b) => (b.featuredPriority || 0) - (a.featuredPriority || 0));
+  },
+
+  async setJobFeatured(
+    jobId: string,
+    isFeatured: boolean,
+    startDate?: string,
+    endDate?: string,
+    priority: number = 1
+  ): Promise<Job | null> {
+    const job = mockJobs.find((j) => j.id === jobId);
+    if (!job) return null;
+
+    job.isFeatured = isFeatured;
+    job.featuredIsActive = isFeatured;
+    job.featuredStartDate = startDate;
+    job.featuredEndDate = endDate;
+    job.featuredPriority = priority;
+
+    return { ...job };
+  },
+
+  async removeJobFeatured(jobId: string): Promise<Job | null> {
+    return this.setJobFeatured(jobId, false);
   },
 
   async createJob(newJob: Omit<Job, 'id' | 'postedDate' | 'applicantsCount' | 'status'>): Promise<Job> {

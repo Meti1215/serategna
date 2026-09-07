@@ -4,12 +4,12 @@ import React from 'react';
 import Link from 'next/link';
 import { Internship } from '@/types';
 import { useSaved } from '@/context/SavedContext';
+import { VerifiedEmployerBadge } from '@/components/common/VerifiedEmployerBadge';
 import {
   MapPin,
   Clock,
   GraduationCap,
   Bookmark,
-  CheckCircle2,
   Calendar,
   Sparkles,
   Award,
@@ -57,9 +57,7 @@ export function InternshipCard({ internship }: { internship: Internship }) {
             <div className="flex items-center gap-1.5 text-xs text-slate-600">
               <span className="font-semibold truncate">{internship.company}</span>
               {internship.isVerifiedCompany && (
-                <span title="Verified Company">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                </span>
+                <VerifiedEmployerBadge size="sm" showText={false} />
               )}
             </div>
 
