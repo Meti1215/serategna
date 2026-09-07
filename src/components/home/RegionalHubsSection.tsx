@@ -107,7 +107,7 @@ export function TestimonialsSection() {
                   ))}
                 </div>
                 <p className="text-xs text-slate-700 leading-relaxed italic">
-                  "{rev.text}"
+                  &ldquo;{rev.text}&rdquo;
                 </p>
               </div>
 

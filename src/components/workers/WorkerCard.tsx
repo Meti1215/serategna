@@ -69,7 +69,7 @@ export function WorkerCard({
             </Link>
 
             <div className="flex-1 min-w-0 pr-6">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Link
                   href={`/workers/${worker.id}`}
                   className="font-bold text-slate-900 text-base hover:text-emerald-700 transition truncate"
@@ -77,15 +77,37 @@ export function WorkerCard({
                   {worker.fullName}
                 </Link>
               </div>
-              <p className="text-sm font-medium text-emerald-800 line-clamp-1 mt-0.5">
-                {worker.profession}
-              </p>
+              <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                <p className="text-sm font-medium text-emerald-800 line-clamp-1">
+                  {worker.profession}
+                </p>
+                {worker.category && (
+                  <span className="px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-semibold border border-slate-200">
+                    {worker.category}
+                  </span>
+                )}
+              </div>
 
-              <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
-                <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span className="truncate">
-                  {worker.city}, {worker.region}
+              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 mt-1">
+                <span className="inline-flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <span className="truncate">
+                    {worker.city}, {worker.region}
+                  </span>
                 </span>
+                {worker.availability && (
+                  <span
+                    className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${
+                      worker.availability === 'Immediately'
+                        ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                        : worker.availability === 'Full-time' || worker.availability === 'Part-time' || worker.availability === 'Contract'
+                        ? 'bg-sky-50 text-sky-800 border-sky-200'
+                        : 'bg-slate-100 text-slate-700 border-slate-200'
+                    }`}
+                  >
+                    {worker.availability === 'Immediately' ? 'Available Now' : worker.availability}
+                  </span>
+                )}
               </div>
             </div>
           </div>

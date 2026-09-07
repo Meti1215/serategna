@@ -19,7 +19,7 @@ const UnlockContext = createContext<UnlockContextType | undefined>(undefined);
 export function UnlockProvider({ children }: { children: React.ReactNode }) {
   // Pre-populate worker-3 (Mohammed Ali) as previously unlocked for demonstration
   const [unlockedWorkerIds, setUnlockedWorkerIds] = useState<string[]>(['worker-3']);
-  const { employerProfile, useOneFreeUnlock } = useAuth();
+  const { employerProfile, consumeFreeUnlock } = useAuth();
 
   const isWorkerUnlocked = (workerId: string) => {
     return unlockedWorkerIds.includes(workerId);
@@ -41,7 +41,7 @@ export function UnlockProvider({ children }: { children: React.ReactNode }) {
     if (res.success) {
       setUnlockedWorkerIds((prev) => [...prev, workerId]);
       if (isFree || paymentMethod === 'Free First Unlock') {
-        useOneFreeUnlock();
+        consumeFreeUnlock();
       }
     }
 

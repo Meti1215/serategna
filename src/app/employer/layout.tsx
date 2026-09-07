@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import {
   LayoutDashboard,
@@ -12,12 +12,9 @@ import {
   Bookmark,
   FileCheck,
   Lock,
-  CreditCard,
   PlusCircle,
   Gift,
-  Building,
   LogOut,
-  ChevronRight,
   ShieldCheck,
 } from 'lucide-react';
 
@@ -27,7 +24,14 @@ export default function EmployerDashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { employerProfile, switchDemoPersona } = useAuth();
+  const router = useRouter();
+  const { role, employerProfile, switchDemoPersona } = useAuth();
+
+  useEffect(() => {
+    if (role !== 'employer' && role !== 'admin') {
+      router.replace('/login');
+    }
+  }, [role, router]);
 
   const navItems = [
     { name: 'Dashboard', href: '/employer/dashboard', icon: LayoutDashboard },

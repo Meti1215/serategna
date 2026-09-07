@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { UserRole, EmployerProfile } from '@/types';
 
 interface AuthUser {
@@ -16,10 +16,12 @@ interface AuthContextType {
   user: AuthUser | null;
   role: UserRole;
   employerProfile: EmployerProfile;
+  workerProfileId: string | null;
   setRole: (role: UserRole) => void;
   switchDemoPersona: (persona: 'guest' | 'worker' | 'employer' | 'admin') => void;
   markFirstJobPosted: () => void;
-  useOneFreeUnlock: () => void;
+  consumeFreeUnlock: () => void;
+  registerWorker: (workerUserId: string, workerProfileId: string, workerName: string, workerEmail?: string, workerAvatar?: string) => void;
 }
 
 const defaultEmployer: EmployerProfile = {
@@ -41,9 +43,19 @@ const defaultEmployer: EmployerProfile = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const PROFILE_ID_STORAGE = 'serategna:auth_worker_profile_id_v1';
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [role, setRoleState] = useState<UserRole>('employer');
   const [employerProfile, setEmployerProfile] = useState<EmployerProfile>(defaultEmployer);
+  const [workerProfileId, setWorkerProfileId] = useState<string | null>(() => {
+    try {
+      if (typeof window !== 'undefined') return window.localStorage.getItem(PROFILE_ID_STORAGE);
+    } catch {
+      // ignore
+    }
+    return null;
+  });
 
   const [user, setUser] = useState<AuthUser | null>({
     id: 'emp-abc',
@@ -101,12 +113,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const useOneFreeUnlock = () => {
+  const consumeFreeUnlock = () => {
     setEmployerProfile((prev) => ({
       ...prev,
       freeUnlocksRemaining: Math.max(0, prev.freeUnlocksRemaining - 1),
       phoneUnlocksCount: prev.phoneUnlocksCount + 1,
     }));
+  };
+
+  const registerWorker: AuthContextType['registerWorker'] = (workerUserId, workerProfileId, workerName, workerEmail, workerAvatar) => {
+    setRoleState('worker');
+    setWorkerProfileId(workerProfileId);
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(PROFILE_ID_STORAGE, workerProfileId);
+      }
+    } catch {
+      // ignore
+    }
+    setUser({
+      id: workerUserId,
+      name: workerName,
+      email: workerEmail ?? '',
+      role: 'worker',
+      avatar: workerAvatar,
+      titleOrCompany: 'Worker Profile',
+    });
   };
 
   return (
@@ -115,10 +147,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         role,
         employerProfile,
+        workerProfileId,
         setRole: setRoleState,
         switchDemoPersona,
         markFirstJobPosted,
-        useOneFreeUnlock,
+        consumeFreeUnlock,
+        registerWorker,
       }}
     >
       {children}

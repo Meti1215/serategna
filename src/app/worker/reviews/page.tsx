@@ -44,7 +44,7 @@ export default function WorkerReviewsPage() {
             </div>
 
             <p className="text-xs text-slate-700 italic leading-relaxed">
-              "{rev.comment}"
+              &ldquo;{rev.comment}&rdquo;
             </p>
 
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">

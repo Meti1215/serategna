@@ -117,7 +117,7 @@ export default function EmployerApplicationsPage() {
             {app.coverLetter && (
               <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/70 text-xs text-slate-600 leading-relaxed">
                 <span className="font-bold text-slate-800 block mb-1">Cover Note:</span>
-                "{app.coverLetter}"
+                &ldquo;{app.coverLetter}&rdquo;
               </div>
             )}
 

@@ -268,3 +268,263 @@ export interface PlatformReport {
   date: string;
   status: 'Pending' | 'Investigating' | 'Resolved' | 'Dismissed';
 }
+
+// ==========================================
+// NEW: Worker Profile Extended Types
+// ==========================================
+
+export type SkillLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
+
+export interface WorkerSkill {
+  id: string;
+  name: string;
+  level: SkillLevel;
+}
+
+export interface WorkerExperience {
+  id: string;
+  jobTitle: string;
+  company: string;
+  location?: string;
+  startDate?: string;
+  endDate?: string;
+  currentlyWorking: boolean;
+  description?: string;
+}
+
+export interface WorkerEducation {
+  id: string;
+  institution: string;
+  qualification: string;
+  fieldOfStudy?: string;
+  startYear?: string;
+  graduationYear?: string;
+  description?: string;
+}
+
+export interface WorkerTraining {
+  id: string;
+  title: string;
+  provider: string;
+  date?: string;
+  duration?: string;
+  description?: string;
+  certificateFile?: WorkerUploadedFile;
+}
+
+export type LanguageProficiency = 'Native' | 'Fluent' | 'Intermediate' | 'Basic';
+
+export interface WorkerLanguage {
+  id: string;
+  language: string;
+  proficiency: LanguageProficiency;
+}
+
+export interface WorkerCertificate {
+  id: string;
+  name: string;
+  issuingOrganization: string;
+  issueDate?: string;
+  expiryDate?: string;
+  file?: WorkerUploadedFile;
+}
+
+export type DocumentVisibility = 'public' | 'employers_only' | 'private';
+
+export type DocumentCategory =
+  | 'cv'
+  | 'certificate'
+  | 'training_certificate'
+  | 'professional_license'
+  | 'id'
+  | 'supporting'
+  | 'other';
+
+export interface WorkerUploadedFile {
+  id: string;
+  name: string;
+  dataUrl: string;
+  size: number;
+  type: string;
+  uploadedAt: string;
+}
+
+export interface WorkerDocument {
+  id: string;
+  title: string;
+  category: DocumentCategory;
+  description?: string;
+  file: WorkerUploadedFile;
+  visibility: DocumentVisibility;
+}
+
+export type WorkerAvailabilityType =
+  | 'available_now'
+  | 'available_from_date'
+  | 'currently_employed'
+  | 'not_available';
+
+export interface WorkerAvailability {
+  type: WorkerAvailabilityType;
+  availableFromDate?: string;
+}
+
+export type SalaryPeriod = 'per_day' | 'per_week' | 'per_month' | 'per_year' | 'negotiable';
+
+export interface WorkerExpectedSalary {
+  min?: number;
+  max?: number;
+  period: SalaryPeriod;
+  currency: 'ETB';
+  public: boolean;
+}
+
+export interface WorkerPreferredLocation {
+  preferredRegion?: string;
+  preferredCity?: string;
+  additionalPreferredCities: string[];
+  willingToRelocate: boolean;
+}
+
+export type WorkerProfileStatus =
+  | 'draft'
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'suspended';
+
+export interface WorkerGenderIdentity {
+  gender?: 'Male' | 'Female' | 'Prefer not to say';
+  dateOfBirth?: string;
+  maritalStatus?: 'Single' | 'Married' | 'Other' | 'Prefer not to say';
+}
+
+// Complete worker profile stored in backend (includes sensitive fields)
+export interface FullWorkerProfile {
+  id: string;
+  userId: string;
+
+  // ===== Basic Information (sensitive fields) =====
+  fullName: string;
+  avatar?: string; // data URL for profile photo
+  phone: string;
+  email?: string;
+  genderIdentity: WorkerGenderIdentity;
+  region?: string;
+  city?: string;
+  subCityWoreda?: string;
+  address?: string;
+
+  // ===== Professional Information =====
+  jobTitle: string;
+  jobCategory?: string;
+  aboutBio?: string;
+  yearsOfExperience: number;
+  skills: WorkerSkill[];
+
+  // ===== Experience, Education, Training =====
+  workExperience: WorkerExperience[];
+  education: WorkerEducation[];
+  training: WorkerTraining[];
+
+  // ===== Certificates & Languages =====
+  certificates: WorkerCertificate[];
+  languages: WorkerLanguage[];
+
+  // ===== Availability & Salary =====
+  availability: WorkerAvailability;
+  expectedSalary: WorkerExpectedSalary;
+  preferredLocation: WorkerPreferredLocation;
+
+  // ===== Secure Documents =====
+  documents: WorkerDocument[];
+
+  // ===== Admin / Status =====
+  profileStatus: WorkerProfileStatus;
+  rejectionReason?: string;
+  createdAt: string;
+  updatedAt: string;
+  submittedAt?: string;
+
+  // ===== Legacy rating fields (for backward compat with WorkerProfile display) =====
+  rating: number;
+  totalReviews: number;
+  ratingsBreakdown: RatingsBreakdown;
+  isFeatured: boolean;
+  isSponsored: boolean;
+  isPhoneVerified: boolean;
+  isEmployerVerified: boolean;
+  verificationStatus: WorkerVerification;
+}
+
+// Subset returned for LIST / CARD views (phone-number privacy, etc.)
+export type PublicWorkerProfile = Pick<
+  FullWorkerProfile,
+  | 'id'
+  | 'fullName'
+  | 'avatar'
+  | 'region'
+  | 'city'
+  | 'jobTitle'
+  | 'jobCategory'
+  | 'aboutBio'
+  | 'yearsOfExperience'
+  | 'availability'
+  | 'profileStatus'
+  | 'createdAt'
+  | 'rating'
+  | 'totalReviews'
+  | 'ratingsBreakdown'
+  | 'isFeatured'
+  | 'isSponsored'
+  | 'isPhoneVerified'
+  | 'isEmployerVerified'
+  | 'verificationStatus'
+> & {
+  mainSkills: { name: string; level: SkillLevel }[];
+  preferredLocationSummary: string;
+  availabilityDisplay: string;
+  languagesDisplay: { language: string; proficiency: LanguageProficiency }[];
+  educationSummary: { institution: string; qualification: string; year?: string }[];
+  experienceSummary: { company: string; role: string; duration: string }[];
+  publicCertificates: { name: string; issuer: string; issueDate?: string }[];
+  documentsPublic: { id: string; title: string; category: DocumentCategory }[];
+  salaryPublicDisplay?: string;
+};
+
+// Subset returned for UNLOCKED employers — includes phone (after payment verification)
+export type UnlockedEmployerViewWorkerProfile = PublicWorkerProfile & {
+  phone: string;
+};
+
+// Worker profile filter params
+export interface WorkerProfileFilterParams {
+  query?: string;
+  category?: string;
+  skill?: string;
+  region?: string;
+  city?: string;
+  minExperience?: number;
+  minRating?: number;
+  availability?: WorkerAvailabilityType | 'All';
+  workType?: string;
+  verifiedOnly?: boolean;
+  sortBy?: 'recommended' | 'rating' | 'experience' | 'newest';
+}
+
+// In-memory notification for worker profile events
+export interface WorkerNotification {
+  id: string;
+  workerId: string;
+  type:
+    | 'profile_submitted'
+    | 'profile_approved'
+    | 'profile_rejected'
+    | 'application_update'
+    | 'employer_message'
+    | 'announcement';
+  title: string;
+  message: string;
+  createdAt: string;
+  read: boolean;
+}

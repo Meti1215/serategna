@@ -159,7 +159,7 @@ export function UnlockPhoneModal({
               </div>
 
               <p className="text-xs text-slate-400">
-                This number is now saved to your Employer Dashboard under "Phone Unlocks".
+                This number is now saved to your Employer Dashboard under &ldquo;Phone Unlocks&rdquo;.
               </p>
             </div>
           ) : (

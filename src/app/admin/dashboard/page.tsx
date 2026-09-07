@@ -108,7 +108,7 @@ export default function AdminDashboardPage() {
           ].map((t) => (
             <button
               key={t.key}
-              onClick={() => setActiveTab(t.key as any)}
+              onClick={() => setActiveTab(t.key as 'overview' | 'workers' | 'employers' | 'jobs' | 'payments' | 'reviews' | 'reports')}
               className={`px-3.5 py-2 rounded-xl font-bold transition ${
                 activeTab === t.key
                   ? 'bg-purple-700 text-white shadow-md'
@@ -386,7 +386,7 @@ export default function AdminDashboardPage() {
                     <span className="text-slate-400 text-xs">on</span>
                     <span className="font-semibold text-emerald-400 text-xs">{rev.jobTitle}</span>
                   </div>
-                  <p className="text-xs text-slate-300 mt-2 italic">"{rev.comment}"</p>
+                  <p className="text-xs text-slate-300 mt-2 italic">&ldquo;{rev.comment}&rdquo;</p>
                   <span className="text-[10px] text-slate-500 block mt-1">Date: {rev.date}</span>
                 </div>
 

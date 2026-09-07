@@ -33,7 +33,7 @@ export default function WorkerApplicationsPage() {
 
               {app.coverLetter && (
                 <p className="text-xs text-slate-600 mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200/60 max-w-xl italic">
-                  "{app.coverLetter}"
+                  &ldquo;{app.coverLetter}&rdquo;
                 </p>
               )}
             </div>

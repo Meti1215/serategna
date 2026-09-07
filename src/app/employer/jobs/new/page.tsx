@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { mockCategories } from '@/data/mockCategories';
 import { mockRegions } from '@/data/mockRegions';
+import { Job } from '@/types';
 import {
   Briefcase,
   Gift,
@@ -29,8 +30,8 @@ export default function PostJobPage() {
   const [location, setLocation] = useState('Addis Ababa (Bole)');
   const [region, setRegion] = useState('Addis Ababa');
   const [salary, setSalary] = useState('18,000 - 25,000 ETB / month');
-  const [employmentType, setEmploymentType] = useState<'Full-time' | 'Part-time' | 'Contract'>('Full-time');
-  const [experienceLevel, setExperienceLevel] = useState<'Entry Level' | '1-3 Years' | '3-5 Years' | '5+ Years'>('3-5 Years');
+  const [employmentType, setEmploymentType] = useState<Job['employmentType']>('Full-time');
+  const [experienceLevel, setExperienceLevel] = useState<Job['experienceLevel']>('3-5 Years');
   const [description, setDescription] = useState('');
   const [deadline, setDeadline] = useState('2026-10-15');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -182,7 +183,7 @@ export default function PostJobPage() {
               <label className="block text-xs font-bold text-slate-700 mb-1">Employment Type</label>
               <select
                 value={employmentType}
-                onChange={(e) => setEmploymentType(e.target.value as any)}
+                onChange={(e) => setEmploymentType(e.target.value as Job['employmentType'])}
                 className="w-full p-2.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white cursor-pointer"
               >
                 <option value="Full-time">Full-time</option>
@@ -199,7 +200,7 @@ export default function PostJobPage() {
               </label>
               <select
                 value={experienceLevel}
-                onChange={(e) => setExperienceLevel(e.target.value as any)}
+                onChange={(e) => setExperienceLevel(e.target.value as Job['experienceLevel'])}
                 className="w-full p-2.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white cursor-pointer"
               >
                 <option value="Entry Level">Entry Level</option>

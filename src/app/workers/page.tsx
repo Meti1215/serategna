@@ -6,7 +6,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { WorkerCard } from '@/components/workers/WorkerCard';
 import { workersService } from '@/services/workersService';
-import { WorkerProfile } from '@/types';
+import { WorkerProfile, WorkerAvailabilityType } from '@/types';
 import { mockCategories } from '@/data/mockCategories';
 import { mockRegions } from '@/data/mockRegions';
 import {
@@ -33,7 +33,7 @@ function WorkersMarketplaceContent() {
   const [region, setRegion] = useState(initialRegion);
   const [minExp, setMinExp] = useState<number>(0);
   const [minRating, setMinRating] = useState<number>(0);
-  const [availability, setAvailability] = useState('All');
+  const [availability, setAvailability] = useState<WorkerAvailabilityType | 'All'>('All');
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [sortBy, setSortBy] = useState<'recommended' | 'rating' | 'experience'>('recommended');
 
@@ -246,7 +246,7 @@ function WorkersMarketplaceContent() {
                 <span className="text-slate-500 font-medium">Sort by:</span>
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
+                  onChange={(e) => setSortBy(e.target.value as 'recommended' | 'rating' | 'experience')}
                   className="p-1.5 text-xs font-semibold text-slate-800 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
                 >
                   <option value="recommended">Recommended</option>
@@ -273,7 +273,7 @@ function WorkersMarketplaceContent() {
                 </div>
                 <h3 className="text-base font-bold text-slate-900">No Workers Found Matching Criteria</h3>
                 <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                  Try broadening your keyword search, selecting "All Categories", or clearing the minimum rating filter.
+                  Try broadening your keyword search, selecting &ldquo;All Categories&rdquo;, or clearing the minimum rating filter.
                 </p>
                 <button
                   onClick={handleResetFilters}

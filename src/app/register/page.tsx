@@ -15,13 +15,9 @@ import {
   Mail,
   Lock,
   Building,
-  Briefcase,
-  MapPin,
   Gift,
   ShieldCheck,
-  CheckCircle2,
   ArrowRight,
-  GraduationCap,
 } from 'lucide-react';
 
 function RegisterPageContent() {
@@ -84,7 +80,7 @@ function RegisterPageContent() {
               Create Your Serategna Account
             </h1>
             <p className="text-xs text-slate-500">
-              Join Ethiopia's verified employment marketplace.
+              Join Ethiopia&rsquo;s verified employment marketplace.
             </p>
           </div>
 

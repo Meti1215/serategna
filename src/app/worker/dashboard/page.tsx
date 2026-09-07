@@ -10,11 +10,6 @@ import {
   Eye,
   Star,
   ArrowRight,
-  Sparkles,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  Briefcase,
   Upload,
 } from 'lucide-react';
 

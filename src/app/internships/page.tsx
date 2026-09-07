@@ -249,7 +249,7 @@ function InternshipsMarketplaceContent() {
                 </div>
                 <h3 className="text-base font-bold text-slate-900">No Internships Found</h3>
                 <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                  Try selecting "All Fields" or clearing the compensation filter.
+                  Try selecting &ldquo;All Fields&rdquo; or clearing the compensation filter.
                 </p>
                 <button
                   onClick={handleReset}

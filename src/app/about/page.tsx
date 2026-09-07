@@ -20,7 +20,7 @@ export default function AboutPage() {
             Transforming Employment in Ethiopia
           </h1>
           <p className="text-xs sm:text-sm text-slate-300 mt-3 leading-relaxed">
-            "Find the Right Worker. Find the Right Opportunity."
+            &ldquo;Find the Right Worker. Find the Right Opportunity.&rdquo;
           </p>
         </div>
       </div>

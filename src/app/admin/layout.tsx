@@ -1,23 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import {
-  ShieldAlert,
-  Users,
-  Building,
-  Briefcase,
-  GraduationCap,
-  CreditCard,
-  Star,
-  Flag,
-  Settings,
   LogOut,
-  LayoutDashboard,
-  Layers,
-  FileCheck,
 } from 'lucide-react';
 
 export default function AdminLayout({
@@ -26,7 +14,14 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { switchDemoPersona } = useAuth();
+  const router = useRouter();
+  const { role, switchDemoPersona } = useAuth();
+
+  useEffect(() => {
+    if (role !== 'admin') {
+      router.replace('/login');
+    }
+  }, [role, router]);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-900 text-slate-100">

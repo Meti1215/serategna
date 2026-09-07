@@ -6,6 +6,7 @@ import { internshipsService } from '@/services/internshipsService';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { mockRegions } from '@/data/mockRegions';
+import { Internship } from '@/types';
 import {
   GraduationCap,
   Calendar,
@@ -136,7 +137,7 @@ export default function PostInternshipPage() {
               <label className="block text-xs font-bold text-slate-700 mb-1">Target Education Level</label>
               <select
                 value={educationLevel}
-                onChange={(e) => setEducationLevel(e.target.value as any)}
+                onChange={(e) => setEducationLevel(e.target.value as Internship['educationLevel'])}
                 className="w-full p-2.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none bg-white cursor-pointer"
               >
                 <option value="Undergraduate">Undergraduate Students</option>
@@ -166,7 +167,7 @@ export default function PostInternshipPage() {
               <label className="block text-xs font-bold text-slate-700 mb-1">Work Mode</label>
               <select
                 value={workType}
-                onChange={(e) => setWorkType(e.target.value as any)}
+                onChange={(e) => setWorkType(e.target.value as Internship['workType'])}
                 className="w-full p-2.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none bg-white cursor-pointer"
               >
                 <option value="Hybrid">Hybrid</option>
@@ -194,7 +195,7 @@ export default function PostInternshipPage() {
               <label className="block text-xs font-bold text-slate-700 mb-1">Compensation</label>
               <select
                 value={compensation}
-                onChange={(e) => setCompensation(e.target.value as any)}
+                onChange={(e) => setCompensation(e.target.value as Internship['compensation'])}
                 className="w-full p-2.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none bg-white cursor-pointer"
               >
                 <option value="Paid">Paid Stipend</option>

@@ -73,7 +73,7 @@ export function PhoneUnlockExplainer() {
                 Pay via Telebirr, Chapa, or CBE
               </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                When ready to contact, the employer clicks "Unlock Phone Number" and completes the 100 ETB
+                When ready to contact, the employer clicks &ldquo;Unlock Phone Number&rdquo; and completes the 100 ETB
                 fee via Ethiopian mobile payment or direct bank transfer.
               </p>
             </div>
@@ -100,7 +100,7 @@ export function PhoneUnlockExplainer() {
                 Full Phone Number Displayed
               </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Upon confirmation, the worker's genuine phone number is immediately shown with one-tap
+                Upon confirmation, the worker&rsquo;s genuine phone number is immediately shown with one-tap
                 call and SMS capabilities, and permanently logged in the employer dashboard.
               </p>
             </div>
